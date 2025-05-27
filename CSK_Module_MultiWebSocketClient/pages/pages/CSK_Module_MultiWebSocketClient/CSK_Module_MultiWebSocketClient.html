@@ -1,0 +1,332 @@
+<layout-row id="RowLayout1" class="myCustomBackground_CSK_Module_MultiWebSocketClient">
+	<layout-column id="ColumnLayout7"
+		class="myCustomFrameNoColor_CSK_Module_MultiWebSocketClient"
+		style="align-items: stretch">
+		<layout-row id="RowLayout5"
+			class="myCustomSpacerVert20_CSK_Module_MultiWebSocketClient">
+		</layout-row>
+		<layout-row id="RowLayout19">
+			<layout-column id="ColumnLayout26" style="align-items: stretch">
+				<layout-row id="RowLayout01" style="align-items: baseline">
+					<davinci-value-display id="VD_Title"
+						class="myCustomLabel_CSK_Module_MultiWebSocketClient" value="MultiWebSocketClient">
+					</davinci-value-display>
+					<davinci-value-display id="VD_Version">
+						<crown-edpws-binding property="value"
+							name="CSK_MultiWebSocketClient/OnNewStatusModuleVersion" update-on-resume>
+						</crown-edpws-binding>
+					</davinci-value-display>
+				</layout-row>
+			</layout-column>
+		</layout-row>
+		<stacked-view id="SV_FeatureSupport">
+			<stacked-pane id="SP_Supported" value="true">
+				<stacked-view id="SV_Login">
+					<stacked-pane id="SP_LoginOK" value="true">
+						<layout-row id="RowLayout6">
+							<layout-column id="ColumnLayout1" style="align-items: stretch">
+								<layout-row id="RowLayout20"
+									class="myCustomMarginFirstRow_CSK_Module_MultiWebSocketClient">
+									<layout-column id="ColumnLayout8"
+										class="myCustomMarginInline1Rem_CSK_Module_MultiWebSocketClient"
+										style="align-items: stretch">
+										<layout-row id="RowLayout4">
+											<layout-column id="ColumnLayout2" style="align-items: stretch">
+											</layout-column>
+											<layout-column id="ColumnLayout6" style="align-items: stretch">
+												<layout-row id="RowLayout112"
+													style="flex-grow: 0; flex-shrink: 0; align-items: center">
+												<layout-column id="ColumnLayout223" style="align-items: stretch">
+												<davinci-value-display id="VD_SelectedInstance" value="Instance">
+												</davinci-value-display>
+												</layout-column>
+												<layout-column id="ColumnLayout56" style="align-items: stretch">
+												<davinci-drop-down id="DD_SelectInstance">
+												<crown-edpws-binding property="data"
+													name="CSK_MultiWebSocketClient/OnNewInstanceList" update-on-resume
+													converter="convertToList">
+												</crown-edpws-binding>
+												<crown-edpws-binding property="value"
+													name="CSK_MultiWebSocketClient/OnNewSelectedInstance" update-on-resume
+													converter="function(value) {return value.toString();}">
+												</crown-edpws-binding>
+												<crown-binding event="change"
+													name="CSK_MultiWebSocketClient/setSelectedInstance"
+													path="param/args/instance" auto-commit
+													converter="function(value) {return Number(value);}">
+												</crown-binding>
+												</davinci-drop-down>
+												</layout-column>
+												<layout-column id="ColumnLayout47" style="align-items: stretch">
+												<layout-row id="RowLayout65"
+													class="myCustomMarginTop7PX_CSK_Module_MultiWebSocketClient"
+													style="align-items: center; justify-content: center">
+												<davinci-button id="B_AddInstance"
+													class="myCustomButton_CSK_Module_MultiWebSocketClient" type="outline"
+													icon-position="append" icon="content/add" title="Add instance">
+												<span></span>
+												<crown-binding event="submit" name="CSK_MultiWebSocketClient/addInstance"
+													auto-commit>
+												</crown-binding>
+												</davinci-button>
+												<davinci-button id="B_ResetInstances"
+													class="myCustomButton_CSK_Module_MultiWebSocketClient" type="outline"
+													icon-position="append"
+													title="Reset instances to one single instance. New setup needs to be saved and restart app to clear old threads."
+													icon="action/delete">
+												<span></span>
+												<crown-binding event="submit" name="CSK_MultiWebSocketClient/resetInstances"
+													auto-commit>
+												</crown-binding>
+												</davinci-button>
+												</layout-row>
+												</layout-column>
+												</layout-row>
+											</layout-column>
+										</layout-row>
+									</layout-column>
+									<layout-column id="ColumnLayout28"
+										class="myCustomBorderLeft_CSK_Module_MultiWebSocketClient"
+										style="align-items: stretch">
+										<layout-row id="RowLayout46" style="align-items: baseline">
+											<layout-column id="ColumnLayout81" style="align-items: stretch">
+												<layout-row id="RowLayout24" style="align-items: center">
+												<layout-column id="ColumnLayout57" style="align-items: stretch">
+												<davinci-value-display id="VD_PersistentData" value="Persistent Data">
+												</davinci-value-display>
+												</layout-column>
+												<layout-column id="ColumnLayout73"
+													style="align-items: stretch; flex-grow: 2">
+												<davinci-text-field id="TF_ParameterName" type="text"
+													title="Name of the parameters within the CSK_PersistentData module to be uses for this module.">
+												<crown-edpws-binding property="value"
+													name="CSK_MultiWebSocketClient/OnNewParameterName" update-on-resume>
+												</crown-edpws-binding>
+												<crown-binding event="change" name="CSK_MultiWebSocketClient/setParameterName"
+													path="param/args/name" auto-commit>
+												</crown-binding>
+												<crown-edpws-binding property="disabled"
+													name="CSK_MultiWebSocketClient/OnPersistentDataModuleAvailable"
+													update-on-resume converter="function(value) {return !value;}">
+												</crown-edpws-binding>
+												</davinci-text-field>
+												</layout-column>
+												<layout-column id="Column_PersistentDatax"
+													style="align-items: stretch">
+												<layout-row id="RowLayout55">
+												<layout-column id="ColumnLayout76" style="align-items: stretch">
+												<layout-row id="RowLayout34"
+													class="myCustomMarginTop7PX_CSK_Module_MultiWebSocketClient"
+													style="justify-content: center; align-items: center">
+												<davinci-button id="B_LoadConfig"
+													class="myCustomButton_CSK_Module_MultiWebSocketClient" type="outline"
+													icon-position="append"
+													title="Load configured parameters from CSK_PersistentData module."
+													icon="action/history">
+												<span></span>
+												<crown-binding event="submit" name="CSK_MultiWebSocketClient/loadParameters"
+													auto-commit>
+												</crown-binding>
+												<crown-edpws-binding property="disabled"
+													name="CSK_MultiWebSocketClient/OnPersistentDataModuleAvailable"
+													update-on-resume converter="function(value) {return !value;}">
+												</crown-edpws-binding>
+												</davinci-button>
+												<davinci-button id="B_SaveConfig"
+													class="myCustomButton_CSK_Module_MultiWebSocketClient" type="outline"
+													icon-position="append"
+													title="Save current configured parameters of this module within CSK_PersistentData module."
+													icon="content/save">
+												<span></span>
+												<crown-binding event="submit" name="CSK_MultiWebSocketClient/sendParameters"
+													auto-commit>
+												</crown-binding>
+												<crown-edpws-binding property="disabled"
+													name="CSK_MultiWebSocketClient/OnPersistentDataModuleAvailable"
+													update-on-resume converter="function(value) {return !value;}">
+												</crown-edpws-binding>
+												</davinci-button>
+												</layout-row>
+												</layout-column>
+												</layout-row>
+												</layout-column>
+												</layout-row>
+												<layout-row id="RowLayout57" style="align-items: center">
+												<layout-column id="ColumnLayout511" style="align-items: stretch">
+												<davinci-collapse id="Collapse_PersistentData"
+													class="myCustomPersistentDataMargin_CSK_Module_MultiWebSocketClient"
+													collapsed-title="..." expanded-title="...">
+												<layout-row id="RowLayout45"
+													class="myCustomPersistentDataMarginBack_CSK_Module_MultiWebSocketClient"
+													style="align-items: center">
+												<layout-column id="ColumnLayout6x" style="align-items: stretch">
+												</layout-column>
+												<layout-column id="ColumnLayout72"
+													style="align-items: stretch; flex-grow: 2">
+												<layout-row id="RowLayout13">
+												<layout-column id="ColumnLayout11" style="align-items: stretch">
+												<layout-row id="RowLayout2x" style="align-items: center">
+												<davinci-value-display id="VD_LoadConfig" value="Load on reboot:"
+													title="Load configured parameters from CSK_PersistentData on app start.">
+												</davinci-value-display>
+												<davinci-checkbox id="CB_LoadConfig"
+													title="Load configured parameters from CSK_PersistentData on app start.">
+												<span></span>
+												<crown-edpws-binding property="checked"
+													name="CSK_MultiWebSocketClient/OnNewStatusLoadParameterOnReboot"
+													update-on-resume>
+												</crown-edpws-binding>
+												<crown-edpws-binding property="disabled"
+													name="CSK_MultiWebSocketClient/OnPersistentDataModuleAvailable"
+													update-on-resume converter="function(value) {return !value;}">
+												</crown-edpws-binding>
+												<crown-binding event="change" name="CSK_MultiWebSocketClient/setLoadOnReboot"
+													path="param/args/status" auto-commit>
+												</crown-binding>
+												</davinci-checkbox>
+												</layout-row>
+												</layout-column>
+												<layout-column id="ColumnLayout77" style="align-items: stretch">
+                                                                            <layout-row id="RowLayout5612"
+                                                                                style="align-items: center; justify-content: flex-end">
+                                                                                <davinci-value-display
+                                                                                    id="VD_FLowConfigPriox"
+                                                                                    value="Flow config priority:"
+                                                                                    title="FlowConfig priority for FlowConfig relevant configurations.">
+                                                                                </davinci-value-display>
+                                                                                <davinci-checkbox id="CB_FlowConfigPrio"
+                                                                                    title="FlowConfig priority for FlowConfig relevant configurations.">
+                                                                                    <span></span>
+                                                                                    <crown-edpws-binding
+                                                                                        property="checked"
+                                                                                        name="CSK_MultiWebSocketClient/OnNewStatusFlowConfigPriority"
+                                                                                        update-on-resume>
+                                                                                    </crown-edpws-binding>
+                                                                                    <crown-binding event="change"
+                                                                                        name="CSK_MultiWebSocketClient/setFlowConfigPriority"
+                                                                                        path="param/args/status"
+                                                                                        auto-commit>
+                                                                                    </crown-binding>
+                                                                                </davinci-checkbox>
+                                                                            </layout-row>
+												</layout-column>
+												</layout-row>
+												</layout-column>
+												<layout-column id="ColumnLayout79" style="align-items: stretch">
+												</layout-column>
+												</layout-row>
+												</davinci-collapse>
+												</layout-column>
+												</layout-row>
+											</layout-column>
+										</layout-row>
+									</layout-column>
+								</layout-row>
+								<layout-row id="RowLayout60"
+									class="myCustomSpacerVert10_CSK_Module_MultiWebSocketClient"
+									style="flex-grow: 0; flex-shrink: 0">
+								</layout-row>
+								<layout-row id="RowLayout47"
+									class="myCustomBorderBottom_CSK_Module_MultiWebSocketClient"
+									style="flex-grow: 0; flex-shrink: 0">
+								</layout-row>
+								<layout-row id="RowLayout61"
+									class="myCustomSpacerVert20_CSK_Module_MultiWebSocketClient"
+									style="flex-grow: 0; flex-shrink: 0">
+								</layout-row>
+								<layout-row id="RowLayout2">
+									<layout-column id="ColumnLayout3"
+										class="myCustomMarginInline1Rem_CSK_Module_MultiWebSocketClient"
+										style="align-items: stretch">
+										<davinci-value-display id="VD_Content" label="Add your content...">
+										</davinci-value-display>
+									</layout-column>
+									<layout-column id="ColumnLayout4"
+										class="myCustomBorderLeft_CSK_Module_MultiWebSocketClient"
+										style="align-items: stretch">
+										<layout-row id="RowLayout3">
+											<layout-column id="ColumnLayout5"
+												class="myCustomFrame_CSK_Module_MultiWebSocketClient"
+												style="align-items: stretch">
+												<davinci-value-display id="VD_Configuration"
+													class="myCustomFrameLabel_CSK_Module_MultiWebSocketClient"
+													label="Configuration" style="align-self: flex-start">
+												</davinci-value-display>
+												<curie-callout id="DC_FlowConfigInfo1" type="info"
+													value="FlowConfig priority active.">
+												<crown-edpws-binding property="hidden"
+													name="CSK_MultiWebSocketClient/OnNewStatusFlowConfigPriority"
+													update-on-resume converter="function(value) {return !value;}">
+												</crown-edpws-binding>
+												</curie-callout>
+												<layout-row id="RowLayout23"
+													style="justify-content: space-between; align-items: center">
+												<layout-column id="ColumnLayout23" style="align-items: stretch">
+												<davinci-value-display id="VD_RegisteredEvent"
+													value="Registered on image event:"
+													title="Process images receiving from this event.">
+												</davinci-value-display>
+												</layout-column>
+												<layout-column id="ColumnLayout14" style="align-items: stretch">
+												<davinci-text-field id="TF_RegisteredEvent" type="text"
+													title="Process images receiving from this event, like 'CSK_ImagePlayer.OnNewImage'">
+												<crown-edpws-binding property="value"
+													name="CSK_MultiWebSocketClient/OnNewStatusRegisteredEvent" update-on-resume>
+												</crown-edpws-binding>
+												<crown-binding event="change" name="CSK_MultiWebSocketClient/setRegisterEvent"
+													path="param/args/event" auto-commit>
+												</crown-binding>
+												<crown-edpws-binding property="disabled"
+													name="CSK_MultiWebSocketClient/OnNewStatusFlowConfigPriority"
+													update-on-resume>
+												</crown-edpws-binding>
+												</davinci-text-field>
+												</layout-column>
+												</layout-row>
+											</layout-column>
+										</layout-row>
+									</layout-column>
+								</layout-row>
+							</layout-column>
+						</layout-row>
+					</stacked-pane>
+					<stacked-pane id="SP_LoginNotOK" value="false">
+						<davinci-callout id="Callout1" type="info">
+							<span>
+								Please log in via CSK_UserManagement module (at least via user level "Operator")
+							</span>
+						</davinci-callout>
+					</stacked-pane>
+					<crown-edpws-binding property="value"
+						name="CSK_MultiWebSocketClient/OnUserLevelOperatorActive" update-on-resume
+						converter="function(value) {return value.toString();}">
+					</crown-edpws-binding>
+				</stacked-view>
+			</stacked-pane>
+			<stacked-pane id="SP_NoSupport" value="false">
+				<layout-row id="RowLayout17">
+					<layout-column id="ColumnLayout25">
+						<davinci-callout id="Callout31" type="warning" style="width: 99%">
+							<span>Module is not supported on this device...</span>
+						</davinci-callout>
+						<img id="UI_sample" src="assets/CSK_Module_MultiWebSocketClient/UI_sample.png"
+							alt="UI sample">
+					</layout-column>
+				</layout-row>
+			</stacked-pane>
+			<crown-edpws-binding property="value"
+				name="CSK_MultiWebSocketClient/OnNewStatusModuleIsActive" update-on-resume
+				converter="function(value) {return value.toString();}">
+			</crown-edpws-binding>
+		</stacked-view>
+		<stacked-view id="SV_PageCalled">
+			<crown-binding property="value" name="CSK_MultiWebSocketClient/pageCalled"
+				path="result/data/empty" auto-update="0" update-on-resume>
+			</crown-binding>
+			<crown-edpws-binding property="value"
+				name="CSK_MultiWebSocketClient/OnNewStatusCSKStyle" update-on-resume
+				converter="changeStyle">
+			</crown-edpws-binding>
+		</stacked-view>
+	</layout-column>
+</layout-row>
