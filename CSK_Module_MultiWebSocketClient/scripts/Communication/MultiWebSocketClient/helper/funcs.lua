@@ -10,6 +10,8 @@
 local funcs = {}
 -- Providing standard JSON functions
 funcs.json = require('Communication/MultiWebSocketClient/helper/Json')
+-- Default parameters for instances of module
+funcs.defaultParameters = require('Communication/MultiWebSocketClient/MultiWebSocketClient_Parameters')
 
 --**************************************************************************
 --********************** End Global Scope **********************************
@@ -145,6 +147,58 @@ local function createStringListBySimpleTable(content)
   end
 end
 funcs.createStringListBySimpleTable = createStringListBySimpleTable
+
+--- Function to create a JSON string out of a table content
+---@param list string Type of list
+---@param content string[] Lua Table with entries for list
+---@return string jsonstring List created of table entries
+local function createSpecificJsonList(list, content)
+  local commandList = {}
+  if content == nil then
+    commandList = {{TriggerCommand = '-', notifyEvent = '-'},}
+  else
+    local size = 0
+      for key, value in pairs(content) do
+        if list == 'eventToForward' then
+          table.insert(commandList, {EventToForward = key})
+        end
+        size = size + 1
+      end
+      if size == 0 then
+        if list == 'eventToForward' then
+          commandList = {{EventToForward = '-'},}
+        end
+      end
+  end
+
+  local jsonstring = funcs.json.encode(commandList)
+  return jsonstring
+end
+funcs.createSpecificJsonList = createSpecificJsonList
+
+--- Function to compare table content. Optionally will fill missing values within content table with values of defaultTable
+---@param content auto Data to check
+---@param defaultTable auto Reference data
+---@return auto[] content Update of data
+local function checkParameters(content, defaultTable)
+  for key, value in pairs(defaultTable) do
+    if type(value) == 'table' then
+      if content[key] == nil then
+        _G.logger:info(nameOfModule .. ": Created missing parameters table '" .. tostring(key) .. "'")
+        content[key] = {}
+      end
+      content[key] = checkParameters(content[key], defaultTable[key])
+    elseif content[key] == nil then
+      _G.logger:info(nameOfModule .. ": Missing parameter '" .. tostring(key) .. "'. Adding default value '" .. tostring(defaultTable[key]) .. "'")
+      content[key] = defaultTable[key]
+      if key == 'cameraNo' then
+        _G.logger:warning(nameOfModule .. ": '" .. tostring(key) .. "' is a major parameter! Default value might not work and needs to be edited!")
+      end
+    end
+  end
+  return content
+end
+funcs.checkParameters = checkParameters
 
 return funcs
 

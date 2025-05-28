@@ -14,6 +14,7 @@ local function loadAPIs()
   Log.SharedLogger = require 'API.Log.SharedLogger'
 
   Container = require 'API.Container'
+  DateTime = require 'API.DateTime'
   Engine = require 'API.Engine'
   Object = require 'API.Object'
   Timer = require 'API.Timer'
@@ -35,7 +36,9 @@ end
 local function loadSpecificAPIs()
   -- If you want to check for specific APIs/functions supported on the device the module is running, place relevant APIs here
   -- e.g.:
-  -- NTPClient = require 'API.NTPClient'
+  WebsocketClient = require 'API.WebsocketClient'
+  WebsocketClient.Response = require 'API.WebsocketClient.Response'
+  WebsocketClient.Error = require 'API.WebsocketClient.Error'
 end
 
 availableAPIs.default = xpcall(loadAPIs, debug.traceback) -- TRUE if all default APIs were loaded correctly
