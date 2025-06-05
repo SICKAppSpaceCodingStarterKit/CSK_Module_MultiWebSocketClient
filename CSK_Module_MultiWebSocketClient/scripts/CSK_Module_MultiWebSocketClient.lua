@@ -50,10 +50,9 @@ local multiWebSocketClient_Instances = {} -- Handle all instances
 local multiWebSocketClientController = require('Communication/MultiWebSocketClient/MultiWebSocketClient_Controller')
 
 if _G.availableAPIs.default and _G.availableAPIs.specific then
-  local setInstanceHandle = require('Communication/MultiWebSocketClient/FlowConfig/MultiWebSocketClient_FlowConfig')
+  require('Communication/MultiWebSocketClient/FlowConfig/MultiWebSocketClient_FlowConfig')
   table.insert(multiWebSocketClient_Instances, multiWebSocketClient_Model.create(1)) -- Create at least 1 instance
   multiWebSocketClientController.setMultiWebSocketClient_Instances_Handle(multiWebSocketClient_Instances) -- share handle of instances
-  setInstanceHandle(multiWebSocketClient_Instances)
 else
   _G.logger:warning("CSK_MultiWebSocketClient: Relevant CROWN(s) not available on device. Module is not supported...")
 end

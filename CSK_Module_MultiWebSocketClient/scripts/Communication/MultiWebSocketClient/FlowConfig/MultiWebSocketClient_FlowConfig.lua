@@ -8,9 +8,6 @@
 require('Communication/MultiWebSocketClient/FlowConfig/MultiWebSocketClient_OnReceive')
 require('Communication/MultiWebSocketClient/FlowConfig/MultiWebSocketClient_Transmit')
 
--- Reference to the multiWebSocketClient_Instances handle
-local multiWebSocketClient_Instances
-
 --- Function to react if FlowConfig was updated
 local function handleOnClearOldFlow()
   if _G.availableAPIs.default and _G.availableAPIs.specific then
@@ -26,11 +23,3 @@ local function handleOnStopProvider()
   end
 end
 Script.register('CSK_FlowConfig.OnStopFlowConfigProviders', handleOnStopProvider)
-
---- Function to get access to the multiWebSocketClient_Instances
----@param handle handle Handle of multiWebSocketClient_Instances object
-local function setMultiWebSocketClient_Instances_Handle(handle)
-  multiWebSocketClient_Instances = handle
-end
-
-return setMultiWebSocketClient_Instances_Handle

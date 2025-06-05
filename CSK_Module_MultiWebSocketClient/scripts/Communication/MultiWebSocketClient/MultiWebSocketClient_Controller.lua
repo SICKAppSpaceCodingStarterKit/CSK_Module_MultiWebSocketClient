@@ -462,6 +462,12 @@ local function loadParameters()
     local data = CSK_PersistentData.getParameter(multiWebSocketClient_Instances[selectedInstance].parametersName)
     if data then
       _G.logger:info(nameOfModule .. ": Loaded parameters for multiWebSocketClientObject " .. tostring(selectedInstance) .. " from CSK_PersistentData module.")
+
+      -- Deactivate old connection if it was active
+      if multiWebSocketClient_Instances[selectedInstance].parameters.clientActivated == true then
+        setConnectionStatus(false)
+      end
+
       multiWebSocketClient_Instances[selectedInstance].parameters = helperFuncs.convertContainer2Table(data)
 
       multiWebSocketClient_Instances[selectedInstance].parameters = helperFuncs.checkParameters(multiWebSocketClient_Instances[selectedInstance].parameters, helperFuncs.defaultParameters.getParameters())
