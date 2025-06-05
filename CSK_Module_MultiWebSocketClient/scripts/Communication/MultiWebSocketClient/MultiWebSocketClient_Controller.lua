@@ -17,6 +17,9 @@ local tmrMultiWebSocketClient = Timer.create()
 tmrMultiWebSocketClient:setExpirationTime(300)
 tmrMultiWebSocketClient:setPeriodic(false)
 
+local eventToForward = '' -- Preset event name to add via UI (see 'addEventToForwardViaUI')
+local selectedEventToForward = '' -- Selected event to forward content on websocket within UI table
+
 local multiWebSocketClient_Model -- Reference to model handle
 local multiWebSocketClient_Instances -- Reference to instances handle
 local selectedInstance = 1 -- Which instance is currently selected
@@ -27,23 +30,31 @@ local helperFuncs = require('Communication/MultiWebSocketClient/helper/funcs')
 ----------------------------------------------------------------
 local function emptyFunction()
 end
-Script.serveFunction("CSK_MultiWebSocketClient.processInstanceNUM", emptyFunction)
+Script.serveFunction("CSK_MultiWebSocketClient.transmitDataNUM", emptyFunction)
 
-Script.serveEvent("CSK_MultiWebSocketClient.OnNewResultNUM", "MultiWebSocketClient_OnNewResultNUM")
+Script.serveEvent("CSK_MultiWebSocketClient.OnNewDataNUM", "MultiWebSocketClient_OnNewDataNUM")
 Script.serveEvent("CSK_MultiWebSocketClient.OnNewValueToForwardNUM", "MultiWebSocketClient_OnNewValueToForwardNUM")
 Script.serveEvent("CSK_MultiWebSocketClient.OnNewValueUpdateNUM", "MultiWebSocketClient_OnNewValueUpdateNUM")
 ----------------------------------------------------------------
 
 -- Real events
 --------------------------------------------------
--- Script.serveEvent("CSK_MultiWebSocketClient.OnNewEvent", "MultiWebSocketClient_OnNewEvent")
-Script.serveEvent('CSK_MultiWebSocketClient.OnNewResult', 'MultiWebSocketClient_OnNewResult')
+Script.serveEvent("CSK_MultiWebSocketClient.OnNewLog", "MultiWebSocketClient_OnNewLog")
 
 Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusModuleVersion', 'MultiWebSocketClient_OnNewStatusModuleVersion')
 Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusCSKStyle', 'MultiWebSocketClient_OnNewStatusCSKStyle')
 Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusModuleIsActive', 'MultiWebSocketClient_OnNewStatusModuleIsActive')
 
-Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusRegisteredEvent', 'MultiWebSocketClient_OnNewStatusRegisteredEvent')
+Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusCurrentlyConnected', 'MultiWebSocketClient_OnNewStatusCurrentlyConnected')
+Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusConnectionStatus', 'MultiWebSocketClient_OnNewStatusConnectionStatus')
+
+Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusShowLog', 'MultiWebSocketClient_OnNewStatusShowLog')
+Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusTempDataToTransmit', 'MultiWebSocketClient_OnNewStatusTempDataToTransmit')
+Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusURL', 'MultiWebSocketClient_OnNewStatusURL')
+Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusConnectionTimeout', 'MultiWebSocketClient_OnNewStatusConnectionTimeout')
+Script.serveEvent('CSK_MultiWebSocketClient.OnNewStatusMessageFormat', 'MultiWebSocketClient_OnNewStatusMessageFormat')
+Script.serveEvent("CSK_MultiWebSocketClient.OnNewEventToForwardList", "MultiWebSocketClient_OnNewEventToForwardList")
+Script.serveEvent("CSK_MultiWebSocketClient.OnNewEventToForward", "MultiWebSocketClient_OnNewEventToForward")
 
 Script.serveEvent("CSK_MultiWebSocketClient.OnNewStatusLoadParameterOnReboot", "MultiWebSocketClient_OnNewStatusLoadParameterOnReboot")
 Script.serveEvent("CSK_MultiWebSocketClient.OnPersistentDataModuleAvailable", "MultiWebSocketClient_OnPersistentDataModuleAvailable")
@@ -60,18 +71,7 @@ Script.serveEvent("CSK_MultiWebSocketClient.OnUserLevelMaintenanceActive", "Mult
 Script.serveEvent("CSK_MultiWebSocketClient.OnUserLevelServiceActive", "MultiWebSocketClient_OnUserLevelServiceActive")
 Script.serveEvent("CSK_MultiWebSocketClient.OnUserLevelAdminActive", "MultiWebSocketClient_OnUserLevelAdminActive")
 
--- ...
-
 -- ************************ UI Events End **********************************
-
---[[
---- Some internal code docu for local used function
-local function functionName()
-  -- Do something
-
-end
-]]
-
 --**************************************************************************
 --********************** End Global Scope **********************************
 --**************************************************************************
@@ -119,7 +119,10 @@ end
 ---@param value auto Value to update
 ---@param selectedObject int? Optionally if internal parameter should be used for internal objects
 local function handleOnNewValueUpdate(instance, parameter, value, selectedObject)
-    multiWebSocketClient_Instances[instance].parameters.internalObject[selectedObject][parameter] = value
+  if parameter == 'currentConnectionStatus' then
+    multiWebSocketClient_Instances[instance].isConnected = value
+  end
+  --multiWebSocketClient_Instances[instance].parameters.internalObject[selectedObject][parameter] = value
 end
 
 --- Function to get access to the multiWebSocketClient_Model object
@@ -183,14 +186,23 @@ local function handleOnExpiredTmrMultiWebSocketClient()
     Script.notifyEvent('MultiWebSocketClient_OnNewSelectedInstance', selectedInstance)
     Script.notifyEvent("MultiWebSocketClient_OnNewInstanceList", helperFuncs.createStringListBySize(#multiWebSocketClient_Instances))
 
-    Script.notifyEvent("MultiWebSocketClient_OnNewStatusRegisteredEvent", multiWebSocketClient_Instances[selectedInstance].parameters.registeredEvent)
+    Script.notifyEvent("MultiWebSocketClient_OnNewStatusCurrentlyConnected", multiWebSocketClient_Instances[selectedInstance].isConnected)
+    Script.notifyEvent("MultiWebSocketClient_OnNewStatusConnectionStatus", multiWebSocketClient_Instances[selectedInstance].parameters.clientActivated)
+    Script.notifyEvent("MultiWebSocketClient_OnNewStatusShowLog", multiWebSocketClient_Instances[selectedInstance].parameters.showLog)
+
+    Script.notifyEvent("MultiWebSocketClient_OnNewStatusTempDataToTransmit", multiWebSocketClient_Instances[selectedInstance].dataToTransmit)
+    Script.notifyEvent("MultiWebSocketClient_OnNewStatusURL", multiWebSocketClient_Instances[selectedInstance].parameters.url)
+    Script.notifyEvent("MultiWebSocketClient_OnNewStatusConnectionTimeout", multiWebSocketClient_Instances[selectedInstance].parameters.timeout)
+    Script.notifyEvent("MultiWebSocketClient_OnNewStatusMessageFormat", multiWebSocketClient_Instances[selectedInstance].parameters.messageFormat)
+
+    Script.notifyEvent("MultiWebSocketClient_OnNewEventToForwardList", multiWebSocketClient_Instances[selectedInstance].helperFuncs.createSpecificJsonList('eventToForward', multiWebSocketClient_Instances[selectedInstance].parameters.forwardEvents))
+    Script.notifyEvent("MultiWebSocketClient_OnNewEventToForward", '')
 
     Script.notifyEvent("MultiWebSocketClient_OnNewStatusFlowConfigPriority", multiWebSocketClient_Instances[selectedInstance].parameters.flowConfigPriority)
     Script.notifyEvent("MultiWebSocketClient_OnNewStatusLoadParameterOnReboot", multiWebSocketClient_Instances[selectedInstance].parameterLoadOnReboot)
     Script.notifyEvent("MultiWebSocketClient_OnPersistentDataModuleAvailable", multiWebSocketClient_Instances[selectedInstance].persistentModuleAvailable)
     Script.notifyEvent("MultiWebSocketClient_OnNewParameterName", multiWebSocketClient_Instances[selectedInstance].parametersName)
   end
-  -- ...
 end
 Timer.register(tmrMultiWebSocketClient, "OnExpired", handleOnExpiredTmrMultiWebSocketClient)
 
@@ -219,7 +231,7 @@ end
 Script.serveFunction("CSK_MultiWebSocketClient.setSelectedInstance", setSelectedInstance)
 
 local function getInstancesAmount ()
-  if multiSerialCom_Instances then
+  if multiWebSocketClient_Instances then
     return #multiWebSocketClient_Instances
   else
     return 0
@@ -232,6 +244,8 @@ local function addInstance()
   table.insert(multiWebSocketClient_Instances, multiWebSocketClient_Model.create(#multiWebSocketClient_Instances+1))
   Script.deregister("CSK_MultiWebSocketClient.OnNewValueToForward" .. tostring(#multiWebSocketClient_Instances) , handleOnNewValueToForward)
   Script.register("CSK_MultiWebSocketClient.OnNewValueToForward" .. tostring(#multiWebSocketClient_Instances) , handleOnNewValueToForward)
+  Script.deregister("CSK_MultiWebSocketClient.OnNewValueUpdate" .. tostring(#multiWebSocketClient_Instances) , handleOnNewValueUpdate)
+  Script.register("CSK_MultiWebSocketClient.OnNewValueUpdate" .. tostring(#multiWebSocketClient_Instances) , handleOnNewValueUpdate)
   handleOnExpiredTmrMultiWebSocketClient()
 end
 Script.serveFunction('CSK_MultiWebSocketClient.addInstance', addInstance)
@@ -249,28 +263,129 @@ local function resetInstances()
 end
 Script.serveFunction('CSK_MultiWebSocketClient.resetInstances', resetInstances)
 
-local function setRegisterEvent(event)
-  multiWebSocketClient_Instances[selectedInstance].parameters.registeredEvent = event
-  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'registeredEvent', event)
+local function setShowLog(status)
+  _G.logger:fine(nameOfModule .. ": Set showLog status to = " .. tostring(status))
+  multiWebSocketClient_Instances[selectedInstance].parameters.showLog = status
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'showLog', status)
 end
-Script.serveFunction("CSK_MultiWebSocketClient.setRegisterEvent", setRegisterEvent)
+Script.serveFunction('CSK_MultiWebSocketClient.setShowLog', setShowLog)
+
+local function setConnectionStatus(status)
+  _G.logger:fine(nameOfModule .. ": Set websocket connection status to = " .. tostring(status))
+  multiWebSocketClient_Instances[selectedInstance].parameters.clientActivated = status
+  if status == true then
+    Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'connect')
+  else
+    Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'disconnect')
+  end
+  Script.notifyEvent("MultiWebSocketClient_OnNewStatusConnectionStatus", multiWebSocketClient_Instances[selectedInstance].parameters.clientActivated)
+end
+Script.serveFunction('CSK_MultiWebSocketClient.setConnectionStatus', setConnectionStatus)
+
+local function setConnectionTimeout(timeout)
+  _G.logger:fine(nameOfModule .. ": Set conenction timeout = " .. tostring(timeout))
+  multiWebSocketClient_Instances[selectedInstance].parameters.timeout = timeout
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'timeout', timeout)
+end
+Script.serveFunction('CSK_MultiWebSocketClient.setConnectionTimeout', setConnectionTimeout)
+
+local function setServerURL(url)
+  _G.logger:fine(nameOfModule .. ": Set websocket server URL = " .. tostring(url))
+  multiWebSocketClient_Instances[selectedInstance].parameters.url = url
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'url', url)
+end
+Script.serveFunction('CSK_MultiWebSocketClient.setServerURL', setServerURL)
+
+local function setMessageFormat(format)
+  _G.logger:fine(nameOfModule .. ": Set message format of data to transmit = " .. tostring(format))
+  multiWebSocketClient_Instances[selectedInstance].parameters.messageFormat = format
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'messageFormat', format)
+end
+Script.serveFunction('CSK_MultiWebSocketClient.setMessageFormat', setMessageFormat)
+
+local function setDataToTransmit(data)
+  _G.logger:fine(nameOfModule .. ": Preset data to transmit = " .. tostring(data))
+  multiWebSocketClient_Instances[selectedInstance].dataToTransmit = data
+end
+Script.serveFunction('CSK_MultiWebSocketClient.setDataToTransmit', setDataToTransmit)
+
+local function transmitDataViaUI()
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'transmit', multiWebSocketClient_Instances[selectedInstance].dataToTransmit)
+end
+Script.serveFunction('CSK_MultiWebSocketClient.transmitDataViaUI', transmitDataViaUI)
+
+local function selectEventToForwardViaUI(selection)
+
+  if selection == "" then
+    selectedEventToForward = ''
+    _G.logger:warning(nameOfModule .. ": Did not find EventToForward. Is empty")
+  else
+    local _, pos = string.find(selection, '"EventToForward":"')
+    if pos == nil then
+      _G.logger:warning(nameOfModule .. ": Did not find EventToForward. Is nil")
+      selectedEventToForward = ''
+    else
+      pos = tonumber(pos)
+      local endPos = string.find(selection, '"', pos+1)
+      selectedEventToForward = string.sub(selection, pos+1, endPos-1)
+      if ( selectedEventToForward == nil or selectedEventToForward == "" ) then
+        _G.logger:warning(nameOfModule .. ": Did not find EventToForward. Is empty or nil")
+        selectedEventToForward = ''
+      else
+        _G.logger:fine(nameOfModule .. ": Selected EventToForward: " .. tostring(selectedEventToForward))
+        if ( selectedEventToForward ~= "-" ) then
+          eventToForward = selectedEventToForward
+          Script.notifyEvent("MultiWebSocketClient_OnNewEventToForward", eventToForward)
+        end
+      end
+    end
+  end
+end
+Script.serveFunction("CSK_MultiWebSocketClient.selectEventToForwardViaUI", selectEventToForwardViaUI)
+
+local function addEventToForward(event)
+  if ( event == '' ) then
+    _G.logger:info(nameOfModule .. ": EventToForward cannot be added. Is empty")
+  else
+    multiWebSocketClient_Instances[selectedInstance].parameters.forwardEvents[event] = event
+    Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'addEvent', event)
+    Script.notifyEvent("MultiWebSocketClient_OnNewEventToForwardList", multiWebSocketClient_Instances[selectedInstance].helperFuncs.createSpecificJsonList('eventToForward', multiWebSocketClient_Instances[selectedInstance].parameters.forwardEvents))
+  end
+end
+Script.serveFunction("CSK_MultiWebSocketClient.addEventToForward", addEventToForward)
+
+local function addEventToForwardViaUI()
+  addEventToForward(eventToForward)
+end
+Script.serveFunction("CSK_MultiWebSocketClient.addEventToForwardViaUI", addEventToForwardViaUI)
+
+local function deleteEventToForward(event)
+  multiWebSocketClient_Instances[selectedInstance].parameters.forwardEvents[event] = nil
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'removeEvent', event)
+  Script.notifyEvent("MultiWebSocketClient_OnNewEventToForwardList", multiWebSocketClient_Instances[selectedInstance].helperFuncs.createSpecificJsonList('eventToForward', multiWebSocketClient_Instances[selectedInstance].parameters.forwardEvents))
+end
+Script.serveFunction("CSK_MultiWebSocketClient.deleteEventToForward", deleteEventToForward)
+
+local function deleteEventToForwardViaUI()
+  if selectedEventToForward ~= '' then
+    deleteEventToForward(selectedEventToForward)
+  end
+end
+Script.serveFunction("CSK_MultiWebSocketClient.deleteEventToForwardViaUI", deleteEventToForwardViaUI)
+
+local function setEventToForward(value)
+  eventToForward = value
+  _G.logger:fine(nameOfModule .. ": Set eventToForward = " .. tostring(value))
+end
+Script.serveFunction("CSK_MultiWebSocketClient.setEventToForward", setEventToForward)
 
 --- Function to share process relevant configuration with processing threads
 local function updateProcessingParameters()
-  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'activeInUI', true)
-
-  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'registeredEvent', multiWebSocketClient_Instances[selectedInstance].parameters.registeredEvent)
-
-  --Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'value', multiWebSocketClient_Instances[selectedInstance].parameters.value)
-
-  -- optionally for internal objects...
-  --[[
-  -- Send config to instances
-  local params = helperFuncs.convertTable2Container(multiWebSocketClient_Instances[selectedInstance].parameters.internalObject)
-  Container.add(data, 'internalObject', params, 'OBJECT')
-  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'FullSetup', data)
-  ]]
-
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'timeout', timeout)
+  Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', selectedInstance, 'url', url)
+  if multiWebSocketClient_Instances[selectedInstance].parameters.clientActivated == true then
+    setConnectionStatus(true)
+  end
 end
 
 local function getStatusModuleActive()
@@ -280,12 +395,28 @@ Script.serveFunction('CSK_MultiWebSocketClient.getStatusModuleActive', getStatus
 
 local function clearFlowConfigRelevantConfiguration()
   for i = 1, #multiWebSocketClient_Instances do
-    multiWebSocketClient_Instances[i].parameters.registeredEvent = ''
-    Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', i, 'deregisterFromEvent', '')
-    Script.notifyEvent('MultiWebSocketClient_OnNewStatusRegisteredEvent', '')
+    if multiWebSocketClient_Instances[i].parameters.flowConfigPriority then
+      for key, value in pairs(multiWebSocketClient_Instances[i].parameters.forwardEvents) do
+        multiWebSocketClient_Instances[i].parameters.forwardEvents[key] = nil
+        Script.notifyEvent('MultiWebSocketClient_OnNewProcessingParameter', i, 'removeEvent', value)
+      end
+    end
   end
+  eventToForward = ''
+  Script.notifyEvent("MultiWebSocketClient_OnNewEventToForwardList", multiWebSocketClient_Instances[selectedInstance].helperFuncs.createSpecificJsonList('eventToForward', multiWebSocketClient_Instances[selectedInstance].parameters.forwardEvents))
+  pageCalled()
 end
 Script.serveFunction('CSK_MultiWebSocketClient.clearFlowConfigRelevantConfiguration', clearFlowConfigRelevantConfiguration)
+
+local function stopFlowConfigRelevantProvider()
+  for i = 1, #multiWebSocketClient_Instances do
+    if multiWebSocketClient_Instances[i].parameters.flowConfigPriority then
+      CSK_MultiWebSocketClient.setSelectedInstance(i)
+      setConnectionStatus(false)
+    end
+  end
+end
+Script.serveFunction('CSK_MultiWebSocketClient.stopFlowConfigRelevantProvider', stopFlowConfigRelevantProvider)
 
 local function getParameters(instanceNo)
   if instanceNo <= #multiWebSocketClient_Instances then
@@ -331,10 +462,18 @@ local function loadParameters()
     local data = CSK_PersistentData.getParameter(multiWebSocketClient_Instances[selectedInstance].parametersName)
     if data then
       _G.logger:info(nameOfModule .. ": Loaded parameters for multiWebSocketClientObject " .. tostring(selectedInstance) .. " from CSK_PersistentData module.")
+
+      -- Deactivate old connection if it was active
+      if multiWebSocketClient_Instances[selectedInstance].parameters.clientActivated == true then
+        setConnectionStatus(false)
+      end
+
       multiWebSocketClient_Instances[selectedInstance].parameters = helperFuncs.convertContainer2Table(data)
 
+      multiWebSocketClient_Instances[selectedInstance].parameters = helperFuncs.checkParameters(multiWebSocketClient_Instances[selectedInstance].parameters, helperFuncs.defaultParameters.getParameters())
+
       -- If something needs to be configured/activated with new loaded data
-      --updateProcessingParameters()
+      updateProcessingParameters()
 
       tmrMultiWebSocketClient:start()
       return true
@@ -418,7 +557,10 @@ Script.register("CSK_PersistentData.OnInitialDataLoaded", handleOnInitialDataLoa
 local function resetModule()
   if _G.availableAPIs.default and _G.availableAPIs.specific then
     clearFlowConfigRelevantConfiguration()
-    pageCalled()
+    for i = 1, #multiWebSocketClient_Instances do
+      CSK_MultiWebSocketClient.setSelectedInstance(i)
+      setConnectionStatus(false)
+    end
   end
 end
 Script.serveFunction('CSK_MultiWebSocketClient.resetModule', resetModule)

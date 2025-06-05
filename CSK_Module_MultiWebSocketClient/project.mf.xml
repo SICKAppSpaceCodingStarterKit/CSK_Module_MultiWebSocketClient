@@ -3,19 +3,32 @@
     <application name="CSK_Module_MultiWebSocketClient">
         <crown name="CSK_Module_MultiWebSocketClient">
             <desc>This is an automatically generated CROWN (description not necessary).</desc>
+            <serves/>
         </crown>
         <crown name="CSK_MultiWebSocketClient">
             <trait>released</trait>
-            <desc>Please fill in information regarding: What is the idea of this module and its features? +
-How to use this module in general.... like: +
-{empty} + 
+            <desc>Module to provide WebSocket functionality. Multiple instances can be created and will run in multiple threads on the device. +
+This module provides a UI for all relevant features. +
+{empty} +
 Typically the features of this module are used like this (check also main script of this module): +
-{empty} + 
+{empty} +
 **1) Setup** +
-ToDo +
-{empty} + 
-**2) Something else....** +
-</desc>
+- If multiple instances are needed, these can be added via 'addInstance()' (not needed if you only use 1 single instace). +
+- Set instance to configure via 'setSelectedInstance' +
+- Set URL of WebSocket via 'setURL'. +
+- Via 'setConnectionStatus' it is possible to activate the WebSocket connection. +
+{empty} +
+**2) Interaction** +
+Other modules can register on these events / trigger these functions: +
+{empty} +
+- 'addEventToForward' (see docu) +
+- 'OnNewDataNUM (see docu) +
+- 'transmitDataNUM' (see docu) +</desc>
+            <enum name="MessageFormat" trait="released">
+                <desc>Format of the WebSocket message.</desc>
+                <item desc="Text message." name="TEXT">TEXT</item>
+                <item desc="Binary message." name="BINARY">BINARY</item>
+            </enum>
             <serves>
                 <event name="OnNewStatusLoadParameterOnReboot">
                     <desc>Notify status if parameters should be loaded on app/device boot up.</desc>
@@ -33,8 +46,7 @@ ToDo +
                     <desc>Event to share processing parameters to the instances.</desc>
                     <param desc="Number of the instance to receive the parameter." multiplicity="1" name="objectNo" type="int"/>
                     <param desc="Name of the parameter." multiplicity="1" name="parameter" type="string"/>
-                    <param desc="Value of the parameter." multiplicity="1" name="value" type="auto"/>
-                    <param desc="If parameter is for specifici internal used object, its number." multiplicity="?" name="internalObjectNo" type="int"/>
+                    <param desc="Value of the parameter." multiplicity="?" name="value" type="auto"/>
                 </event>
                 <event name="OnNewSelectedInstance">
                     <desc>Notify if new instance is selected.</desc>
@@ -43,11 +55,12 @@ ToDo +
                 <event name="OnDataLoadedOnReboot">
                     <desc>Event to call if module tried to load parameters and should be ready.</desc>
                 </event>
-                <event name="OnNewResultNUM">
-                    <desc>Example of dynamically created event to provide result of instance. +
-NUM will be replaced by the number of instance (e.g. "OnNewResult1"). +
+                <event name="OnNewDataNUM">
+                    <desc>Example of dynamically created event to provide received data of Websocket client. +
+NUM will be replaced by the number of instance (e.g. "OnNewData1"). +
 INFO: Other modules can check via "Script.isServedAsEvent" if event of sepecific instance exists.</desc>
-                    <param desc="Result" multiplicity="1" name="result" type="auto"/>
+                    <param desc="Data" multiplicity="1" name="data" type="binary"/>
+                    <param desc="Message format." multiplicity="1" name="format" type="enum"/>
                 </event>
                 <event name="OnNewParameterName">
                     <desc>Notify name of persistent data parameter.</desc>
@@ -83,14 +96,6 @@ NUM will be replaced by the number of instance (e.g. "OnNewValueToForward1"). +<
                     <param desc="Eventname to use to forward value." multiplicity="1" name="eventname" type="string"/>
                     <param desc="Value to forward." multiplicity="1" name="value" type="auto"/>
                 </event>
-                <event name="OnNewResult">
-                    <desc>Generic event to notify results. E.g. to forward results from single instances.</desc>
-                    <param desc="Result" multiplicity="1" name="result" type="auto"/>
-                </event>
-                <event name="OnNewStatusRegisteredEvent">
-                    <desc>Notify event instance is registered to receive data to process.</desc>
-                    <param desc="Name of event." multiplicity="1" name="eventname" type="string"/>
-                </event>
                 <event name="OnNewStatusFlowConfigPriority">
                     <desc>Notify if FlowConfig should have priority for FlowConfig relevant configurations.</desc>
                     <param desc="Status" multiplicity="1" name="status" type="bool"/>
@@ -105,6 +110,46 @@ NUM will be replaced by the number of instance (e.g. "OnNewValueToForward1"). +<
                 </event>
                 <event name="OnNewStatusModuleIsActive">
                     <desc>Notify if module can be used on device.</desc>
+                    <param desc="Status" multiplicity="1" name="status" type="bool"/>
+                </event>
+                <event name="OnNewLog">
+                    <desc>Notfiy latest log.</desc>
+                    <param desc="Log entries." multiplicity="1" name="log" type="string"/>
+                </event>
+                <event name="OnNewStatusCurrentlyConnected">
+                    <desc>Notify if client is currently connected.</desc>
+                    <param desc="Status" multiplicity="1" name="status" type="bool"/>
+                </event>
+                <event name="OnNewStatusConnectionStatus">
+                    <desc>Notify if client should be connected.</desc>
+                    <param desc="Status" multiplicity="1" name="status" type="bool"/>
+                </event>
+                <event name="OnNewStatusTempDataToTransmit">
+                    <desc>Notify data to transmit.</desc>
+                    <param desc="Data" multiplicity="1" name="data" type="string"/>
+                </event>
+                <event name="OnNewStatusURL">
+                    <desc>Notify URL to connect WebSocket client.</desc>
+                    <param desc="URL" multiplicity="1" name="url" type="string"/>
+                </event>
+                <event name="OnNewStatusConnectionTimeout">
+                    <desc>Notify timeout to wait until the client gets connected.</desc>
+                    <param desc="Timeout in ms." multiplicity="1" name="timeout" type="int"/>
+                </event>
+                <event name="OnNewStatusMessageFormat">
+                    <desc>Notify format of message to transmit.</desc>
+                    <param desc="Message format." multiplicity="1" name="format" type="string"/>
+                </event>
+                <event name="OnNewEventToForward">
+                    <desc>Notify event to register to and to forward its content to UDP socket.</desc>
+                    <param desc="Name of event" multiplicity="1" name="eventName" type="string"/>
+                </event>
+                <event name="OnNewEventToForwardList">
+                    <desc>Notify list of events to register to and to forward its content to UDP socket.</desc>
+                    <param desc="List" multiplicity="1" name="list" type="string"/>
+                </event>
+                <event name="OnNewStatusShowLog">
+                    <desc>Notify status to show WebSocket communication log in UI.</desc>
                     <param desc="Status" multiplicity="1" name="status" type="bool"/>
                 </event>
                 <function name="setParameterName">
@@ -126,19 +171,6 @@ NUM will be replaced by the number of instance (e.g. "OnNewValueToForward1"). +<
                 <function name="getInstancesAmount">
                     <desc>Get the amount of created instances of this module.</desc>
                     <return desc="Amount of created instances." multiplicity="1" name="amount" type="int"/>
-                </function>
-                <function name="setRegisterEvent">
-                    <desc>Configure event that this module should listen to. If this one is notified, it will be linked to internal processing function. +
-(Will be set to currently active instance, see "setSelectedObject")</desc>
-                    <param desc="(external) Event name to listen to." multiplicity="1" name="event" type="string"/>
-                </function>
-                <function name="processInstanceNUM">
-                    <desc>Example of dynamically served function to process internally coded function. +
-NUM will be replaced by the number of instance (e.g. "processInstance1"). +
-INFO: Other modules can check via "Script.isServedAsFunction" if function of sepecific instance exists. +
-Needs then to be called via "Script.callFunction".</desc>
-                    <param desc="Transferred object (optional)" multiplicity="?" name="data" type="auto"/>
-                    <return desc="Processing result (optional)." multiplicity="?" name="result" type="auto"/>
                 </function>
                 <function name="addInstance">
                     <desc>Function to add an additional instance.</desc>
@@ -175,42 +207,100 @@ IMPORTANT: As instances start their own threads, the module needs to be restarte
                 <function name="resetModule">
                     <desc>Function to reset main configuration of module.</desc>
                 </function>
+                <function name="setConnectionStatus">
+                    <desc>Function to set connection status of WebSocket.</desc>
+                    <param desc="Status" multiplicity="1" name="status" type="bool"/>
+                </function>
+                <function name="setServerURL">
+                    <desc>Function to set WebSocket server URL.</desc>
+                    <param desc="URL (e.g. ws://192.168.136.100:8888/ws)" multiplicity="1" name="url" type="string"/>
+                </function>
+                <function name="setMessageFormat">
+                    <desc>Function to set format of data to transmit.</desc>
+                    <param desc="Message format." multiplicity="1" name="format" ref="CSK_MultiWebsocketClient.MessageFormat" type="enum"/>
+                </function>
+                <function name="setDataToTransmit">
+                    <desc>Function to preset data to transmit.</desc>
+                    <param desc="Data" multiplicity="1" name="data" type="string"/>
+                </function>
+                <function name="transmitDataViaUI">
+                    <desc>Function to transmit preset data.</desc>
+                </function>
+                <function name="setConnectionTimeout">
+                    <desc>Function to set timeout to wait until the client gets connected.</desc>
+                    <param desc="Timeout in ms." multiplicity="1" name="timeout" type="int"/>
+                </function>
+                <function name="selectEventToForwardViaUI">
+                    <desc>Select an event to forward the content of its first parameter via WebSocket client via UI.</desc>
+                    <param desc="Selected event." multiplicity="1" name="selection" type="string"/>
+                </function>
+                <function name="addEventToForward">
+                    <desc>Add an event to register to and to forward the content of its first parameter (as string) via WebSocket.</desc>
+                    <param desc="Name of event to register to." multiplicity="1" name="event" type="string"/>
+                </function>
+                <function name="addEventToForwardViaUI">
+                    <desc>Add event to register to and forward content (first event parameter as string) on WebSocket via UI (event needs to be prefilled on UI / via "setEventToForward").</desc>
+                </function>
+                <function name="deleteEventToForward">
+                    <desc>Remove event to forward content.</desc>
+                    <param desc="Eventname" multiplicity="1" name="event" type="string"/>
+                </function>
+                <function name="deleteEventToForwardViaUI">
+                    <desc>Remove event preselected via UI.</desc>
+                </function>
+                <function name="setEventToForward">
+                    <desc>Preset event to register to and forward content to WebSocket via UI.</desc>
+                    <param desc="Event to register to." multiplicity="1" name="value" type="string"/>
+                </function>
+                <function name="setShowLog">
+                    <desc>Function to set if communication log should be shown on UI.</desc>
+                    <param desc="Status" multiplicity="1" name="status" type="bool"/>
+                </function>
+                <function name="transmitDataNUM">
+                    <desc>Example of dynamically served function to transmit data via WebSocket on specific instance. +
+NUM will be replaced by the number of instance (e.g. "transmitData1"). +
+INFO: Other modules can check via "Script.isServedAsFunction" if function of sepecific instance exists. +
+Needs then to be called via "Script.callFunction".</desc>
+                    <param desc="Data to transmit." multiplicity="1" name="data" type="binary"/>
+                    <return desc="Success of transmission." multiplicity="1" name="success" type="bool"/>
+                </function>
+                <function name="stopFlowConfigRelevantProvider">
+                    <desc>Function to stop FlowConfig relevant providers.</desc>
+                </function>
             </serves>
         </crown>
         <crown name="MultiWebSocketClient_FC">
             <trait>released</trait>
             <desc>Crown to provide CSK_FlowConfig relevant features.</desc>
-            <enum name="ResultType" trait="released" type="string">
-                <desc>Types of results to provide.</desc>
-                <item desc="TotalResult + optional sub results (see 'setResultOutput') concatenated as a string." name="TOTAL_SUBRESULTS">TOTAL_SUBRESULTS</item>
-                <item desc="TotalResult as boolean." name="TOTAL_RESULT">TOTAL_RESULT</item>
-            </enum>
             <serves/>
-            <crown name="Consumer">
-                <desc>Set source of incoming data to process.</desc>
+            <crown name="Transmit">
+                <desc>Set source of incoming data to forward via WebSocket.</desc>
                 <serves>
                     <function name="create">
                         <desc>Internally used CSK_FlowConfig create function.</desc>
                         <param constraint="1-99" desc="Numeric identifier of processing instance." multiplicity="1" name="Instance" type="int"/>
                         <return desc="Handle to internally used FlowConfig instance." multiplicity="1" name="handle" type="handle"/>
                     </function>
-                    <function name="consume">
+                    <function name="transmit">
                         <include>data-flow</include>
-                        <desc>Set source of incoming data to process.</desc>
-                        <param desc="Handle to internally used FlowConfig instance." multiplicity="1" name="handle" type="handle"/>
-                        <param desc="E.g. event to set to get data to process.&#10;&#10;Parameter: (e.g. like)&#10;1: Data (STRING or IMAGE)&#10;2: (optional) timestamp (INT)" multiplicity="1" name="source" type="string"/>
+                        <desc>Set source of incoming data to forward via WebSocket.</desc>
+                        <param desc="Handle to internally used FlowConfig instance." multiplicity="1" name="handle" type="binary"/>
+                        <param desc="Source1 of data to forward via WebSocket.&#10;&#10;Parameter:&#10;1: Data content (BINARY)" multiplicity="?" name="source1" type="string"/>
+                        <param desc="Source2 of data to forward via WebSocket.&#10;&#10;Parameter:&#10;1: Data content (BINARY)" multiplicity="?" name="source2" type="string"/>
+                        <param desc="Source3 of data to forward via WebSocket.&#10;&#10;Parameter:&#10;1: Data content (BINARY)" multiplicity="?" name="source3" type="string"/>
+                        <param desc="Source4 of data to forward via WebSocket.&#10;&#10;Parameter:&#10;1: Data content (BINARY)" multiplicity="?" name="source4" type="string"/>
                     </function>
                 </serves>
             </crown>
-            <crown name="Provider">
+            <crown name="OnReceive">
                 <trait>released</trait>
-                <desc>Provide e.g. result via an event like 'CSK_MultiWebSocketClient.OnNewResult[InstanceNUM]'.</desc>
+                <desc>Provide received webscket data.</desc>
                 <serves>
-                    <event name="OnNewResult">
+                    <event name="OnNewData">
                         <include>data-flow</include>
-                        <desc>Provide e.g. result via an event like 'CSK_MultiWebSocketClient.OnNewResult[InstanceNUM]'.</desc>
-                        <param desc="Handle to internally used FlowConfig instance." multiplicity="1" name="handle" type="handle"/>
-                        <param desc="'CSK_MultiWebSocketClient.OnNewResult[InstanceNUM]'&#10;&#10;Parameter (e.g. like)&#10;1: Total result (BOOL)&#10;2: Subresult (STRING)&#10;3: Timestamp (INT)" multiplicity="1" name="OnNewResult" ref="MultiColorSelection_FC.ResultType" type="string"/>
+                        <desc>Provide received WebSocket data.</desc>
+                        <param desc="Handle to internally used FlowConfig instance." multiplicity="1" name="handle" type="binary"/>
+                        <param desc="'CSK_MultiWebSocketClient.OnNewData[InstanceNUM]'&#10;&#10;Parameter:&#10;1: Data content (BINARY)" multiplicity="1" name="OnNewData" ref="MultiColorSelection_FC.ResultType" type="string"/>
                     </event>
                     <function name="create">
                         <trait>released</trait>
@@ -228,33 +318,14 @@ IMPORTANT: As instances start their own threads, the module needs to be restarte
                     </function>
                 </serves>
             </crown>
-            <crown name="Process">
-                <trait>released</trait>
-                <desc>Set source event of incoming data and provide result event.</desc>
-                <serves>
-                    <function name="create">
-                        <trait>released</trait>
-                        <desc>Internally used CSK_FlowConfig create function.</desc>
-                        <param constraint="1-99" desc="Numeric identifier of processing instance." multiplicity="1" name="Instance" type="int"/>
-                        <return desc="Handle to internally used FlowConfig instance." multiplicity="1" name="handle" type="handle"/>
-                    </function>
-                    <function name="process">
-                        <include>data-flow</include>
-                        <desc>Set source event of incoming data and provide result event.</desc>
-                        <param desc="Handle to internally used FlowConfig instance." multiplicity="1" name="handle" type="handle"/>
-                        <param desc="E.g. event to set to get data to process.&#10;&#10;Parameter (e.g. like):&#10;1: image (IMAGE)&#10;2: (optional) timestamp (INT)" multiplicity="1" name="source" type="string"/>
-                        <return desc="'CSK_MultiWebSocketClient.OnNewResult[InstanceNUM]'&#10;&#10;Parameter (e.g. like)&#10;1: Total result (BOOL)&#10;2: Subresult (STRING)&#10;3: Timestamp (INT)" multiplicity="1" name="OnNewResult" type="string"/>
-                    </function>
-                </serves>
-            </crown>
         </crown>
         <meta key="author">SICK AG</meta>
-        <meta key="version">0.1.0</meta>
+        <meta key="version">1.0.0</meta>
         <meta key="priority">low</meta>
         <meta key="copy-protected">false</meta>
         <meta key="read-protected">false</meta>
         <meta key="crown2-flow-engine">false</meta>
-        <meta key="LuaLoadAllEngineAPI">true</meta>
+        <meta key="LuaLoadAllEngineAPI">false</meta>
         <entry default="CSK_Module_MultiWebSocketClient.lua" path="scripts"/>
     </application>
 </manifest>

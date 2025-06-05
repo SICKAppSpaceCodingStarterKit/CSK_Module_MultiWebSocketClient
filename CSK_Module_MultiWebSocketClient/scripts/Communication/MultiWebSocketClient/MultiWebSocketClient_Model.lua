@@ -41,13 +41,6 @@ function multiWebSocketClient.create(multiWebSocketClientInstanceNo)
   self.multiWebSocketClientInstanceNoString = tostring(self.multiWebSocketClientInstanceNo) -- Number of this instance as string
   self.helperFuncs = require('Communication/MultiWebSocketClient/helper/funcs') -- Load helper functions
 
-  -- Optionally check if specific API was loaded via
-  --[[
-  if _G.availableAPIs.specific then
-  -- ... doSomething ...
-  end
-  ]]
-
   -- Create parameters etc. for this module instance
   self.activeInUI = false -- Check if this instance is currently active in UI
 
@@ -62,62 +55,29 @@ function multiWebSocketClient.create(multiWebSocketClientInstanceNo)
   self.parametersName = 'CSK_MultiWebSocketClient_Parameter' .. self.multiWebSocketClientInstanceNoString -- name of parameter dataset to be used for this module
   self.parameterLoadOnReboot = false -- Status if parameter dataset should be loaded on app/device reboot
 
-  --self.object = Image.create() -- Use any AppEngine CROWN
-  --self.counter = 1 -- Short docu of variable
-  --self.varA = 'value' -- Short docu of variable
+  self.isConnected = false -- Current connection status
+  self.dataToTransmit = '' -- Preset data to transmit
 
   -- Parameters to be saved permanently if wanted
   self.parameters = {}
-  self.parameters.flowConfigPriority = CSK_FlowConfig ~= nil or false -- Status if FlowConfig should have priority for FlowConfig relevant configurations
-  self.parameters.registeredEvent = '' -- If thread internal function should react on external event, define it here, e.g. 'CSK_OtherModule.OnNewInput'
-  self.parameters.processingFile = 'CSK_MultiWebSocketClient_Processing' -- which file to use for processing (will be started in own thread)
-  --self.parameters.showImage = true -- Short docu of variable
-  --self.parameters.paramA = 'paramA' -- Short docu of variable
-  --self.parameters.paramB = 123 -- Short docu of variable
-
-  self.parameters.internalObject = {} -- optionally
-  --self.parameters.selectedObject = 1 -- Which object is currently selected
-  --[[
-    for i = 1, 10 do
-    local obj = {}
-
-    obj.objectName = 'Object' .. tostring(i) -- name of the object
-    obj.active = false  -- is this object active
-    -- ...
-
-    table.insert(self.parameters.internalObject, obj)
-  end
-
-  local internalObjectContainer = self.helperFuncs.convertTable2Container(self.parameters.internalObject)
-  ]]
+  self.parameters = self.helperFuncs.defaultParameters.getParameters() -- Load default parameters
 
   -- Parameters to give to the processing script
   self.multiWebSocketClientProcessingParams = Container.create()
   self.multiWebSocketClientProcessingParams:add('multiWebSocketClientInstanceNumber', multiWebSocketClientInstanceNo, "INT")
-  self.multiWebSocketClientProcessingParams:add('registeredEvent', self.parameters.registeredEvent, "STRING")
-  --self.multiWebSocketClientProcessingParams:add('showImage', self.parameters.showImage, "BOOL")
-  --self.multiWebSocketClientProcessingParams:add('viewerId', 'multiWebSocketClientViewer' .. self.multiWebSocketClientInstanceNoString, "STRING")
-
-  --self.multiWebSocketClientProcessingParams:add('internalObjects', internalObjectContainer, "OBJECT") -- optionally
-  --self.multiWebSocketClientProcessingParams:add('selectedObject', self.parameters.selectedObject, "INT")
+  self.multiWebSocketClientProcessingParams:add('showLog', self.parameters.showLog, "BOOL")
+  self.multiWebSocketClientProcessingParams:add('clientActivated', self.parameters.clientActivated, "BOOL")
+  self.multiWebSocketClientProcessingParams:add('url', self.parameters.url, "STRING")
+  self.multiWebSocketClientProcessingParams:add('timeout', self.parameters.timeout, "INT")
+  self.multiWebSocketClientProcessingParams:add('headerKey', self.parameters.headerKey, "STRING")
+  self.multiWebSocketClientProcessingParams:add('headerValue', self.parameters.headerValue, "STRING")
+  self.multiWebSocketClientProcessingParams:add('messageFormat', self.parameters.messageFormat, "STRING")
 
   -- Handle processing
   Script.startScript(self.parameters.processingFile, self.multiWebSocketClientProcessingParams)
 
   return self
 end
-
---[[
---- Some internal code docu for local used function to do something
-function multiWebSocketClient:doSomething()
-  self.object:doSomething()
-end
-
---- Some internal code docu for local used function to do something else
-function multiWebSocketClient:doSomethingElse()
-  self:doSomething() --> access internal function
-end
-]]
 
 return multiWebSocketClient
 

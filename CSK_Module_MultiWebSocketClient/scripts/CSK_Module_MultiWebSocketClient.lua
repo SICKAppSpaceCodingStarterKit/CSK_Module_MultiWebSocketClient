@@ -22,8 +22,6 @@
 
 ---@diagnostic disable: undefined-global, redundant-parameter, missing-parameter
 
--- See README file regarding StepByStep instruction to customize this template manually or make use of the cli renaming tool
--- CreationTemplateVersion: 3.7.0
 --**************************************************************************
 --**********************Start Global Scope *********************************
 --**************************************************************************
@@ -52,10 +50,9 @@ local multiWebSocketClient_Instances = {} -- Handle all instances
 local multiWebSocketClientController = require('Communication/MultiWebSocketClient/MultiWebSocketClient_Controller')
 
 if _G.availableAPIs.default and _G.availableAPIs.specific then
-  local setInstanceHandle = require('Communication/MultiWebSocketClient/FlowConfig/MultiWebSocketClient_FlowConfig')
+  require('Communication/MultiWebSocketClient/FlowConfig/MultiWebSocketClient_FlowConfig')
   table.insert(multiWebSocketClient_Instances, multiWebSocketClient_Model.create(1)) -- Create at least 1 instance
   multiWebSocketClientController.setMultiWebSocketClient_Instances_Handle(multiWebSocketClient_Instances) -- share handle of instances
-  setInstanceHandle(multiWebSocketClient_Instances)
 else
   _G.logger:warning("CSK_MultiWebSocketClient: Relevant CROWN(s) not available on device. Module is not supported...")
 end
@@ -65,31 +62,6 @@ end
 --**************************************************************************
 --**********************Start Function Scope *******************************
 --**************************************************************************
-
---[[
---- Function to show how this module could be used
-local function startProcessing()
-
-  CSK_MultiWebSocketClient.setSelectedInstance(1) --> select instance of module
-  CSK_MultiWebSocketClient.doSomething() --> preparation
-
-  -- Option A --> prepare an event to trigger processing via this one
-  --Script.serveEvent("CSK_MultiWebSocketClient.OnNewTestEvent", "MultiWebSocketClient_OnNewTestEvent") --> Create event to listen to and process forwarded object
-  --CSK_MultiWebSocketClient.setRegisterEvent('CSK_MultiWebSocketClient.OnNewTestEvent') --> Register processing to the event
-
-  --Script.notifyEvent('OnNewTestEvent', data)
-
-    -- Option B --> trigger processing via function call
-    local result = CSK_MultiWebSocketClient.processSomething(data)
-
-  end
-end
-
--- Call processing function after persistent data was loaded
---Script.register("CSK_MultiWebSocketClient.OnDataLoadedOnReboot", startProcessing)
-]]
-
---OR
 
 --- Function to react on startup event of the app
 local function main()
@@ -102,10 +74,8 @@ local function main()
   --       (see internal variable _G.multiWebSocketClient_Model.parameterLoadOnReboot)
   --       If so, the app will trigger the "OnDataLoadedOnReboot" event if ready after loading parameters
   --
-  -- Can be used e.g. like this
   ----------------------------------------------------------------------------------------
 
-  --startProcessing() --> see above
   if _G.availableAPIs.default and _G.availableAPIs.specific then
     CSK_MultiWebSocketClient.setSelectedInstance(1)
   end
