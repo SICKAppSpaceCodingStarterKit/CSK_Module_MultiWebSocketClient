@@ -1,5 +1,5 @@
 -- Block namespace
-local BLOCK_NAMESPACE = "MultiWebSocketClient_FC.Provider"
+local BLOCK_NAMESPACE = 'MultiWebSocketClient_FC.Transmit'
 local nameOfModule = 'CSK_MultiWebSocketClient'
 
 --*************************************************************
@@ -8,11 +8,9 @@ local nameOfModule = 'CSK_MultiWebSocketClient'
 -- Required to keep track of already allocated resource
 local instanceTable = {}
 
-local function register(handle, _ , callback)
+local function transmit(handle, source1, source2, source3, source4)
 
-  Container.remove(handle, "CB_Function")
-  Container.add(handle, "CB_Function", callback)
-
+  local sourceEvents = { s1=source1 or 'none', s2=source2 or 'none', s3=source3 or 'none', s4=source4 or 'none'}
   local instance = Container.get(handle, 'Instance')
 
   -- Check if amount of instances is valid
@@ -26,43 +24,33 @@ local function register(handle, _ , callback)
     end
   end
 
-  local function localCallback()
-    local cbFunction = Container.get(handle,"CB_Function")
-
-    if cbFunction ~= nil then
-        Script.callFunction(cbFunction, 'CSK_MultiWebSocketClient.OnNewResult' .. tostring(instance))
-    else
-      _G.logger:warning(nameOfModule .. ": " .. BLOCK_NAMESPACE .. ".CB_Function missing!")
+  CSK_MultiWebSocketClient.setSelectedInstance(instance)
+  for key, value in pairs(sourceEvents) do
+    if value ~= 'none' then
+      CSK_MultiWebSocketClient.addEventToForward(value)
     end
   end
-  Script.register('CSK_FlowConfig.OnNewFlowConfig', localCallback)
-
-  return true
 end
-Script.serveFunction(BLOCK_NAMESPACE ..".register", register)
+Script.serveFunction(BLOCK_NAMESPACE .. '.transmit', transmit)
 
 --*************************************************************
 --*************************************************************
 
 local function create(instance)
 
-  local fullInstanceName = tostring(instance) -- .. tostring(mode) -- Optionally add parameters, check manifest as well
-
   -- Check if same instance is already configured
-  if instance < 1 or instanceTable[fullInstanceName] ~= nil then
-    _G.logger:warning(nameOfModule .. "Instance invalid or already in use, please choose another one")
+  if instance < 1 or nil ~= instanceTable[instance] then
+    _G.logger:warning(nameOfModule .. ': Instance invalid or already in use, please choose another one')
     return nil
   else
     -- Otherwise create handle and store the restriced resource
     local handle = Container.create()
-    instanceTable[fullInstanceName] = fullInstanceName
+    instanceTable[instance] = instance
     Container.add(handle, 'Instance', instance)
-    --Container.add(handle, 'Mode', mode)
-    Container.add(handle, "CB_Function", "")
     return handle
   end
 end
-Script.serveFunction(BLOCK_NAMESPACE .. ".create", create)
+Script.serveFunction(BLOCK_NAMESPACE .. '.create', create)
 
 --- Function to reset instances if FlowConfig was cleared
 local function handleOnClearOldFlow()
